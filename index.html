@@ -15,7 +15,7 @@
 </head>
 <body>
     <h1>h5wasm Edit Issues</h1>
-    <p>Open the Developer Console to view internal errors that block updates to existing attributes.</p>
+    <small>Open the Developer Console to view internal errors that block updates to existing attributes.</small>
 </body>
 <script type="module">
 
@@ -26,14 +26,24 @@ let new_file = new h5wasm.File("myfile.h5", "w");
 
 const attrToUpdate = "new_attr"
 
+const ogValue = "something wicked this way comes"
+const newValue =  "THIS IS SOME NEW TEXT"
+
+document.body.insertAdjacentHTML("beforeend", `<p><b>Original Value:</b> ${ogValue}</p>`)
 new_file.create_attribute(attrToUpdate, "something wicked this way comes");
 new_file.close()
 
 let editable = new h5wasm.File("myfile.h5", "a");
-editable.create_attribute(attrToUpdate, "something new this way comes");
+
+document.body.insertAdjacentHTML("beforeend", `<p><b>Intended Update Result:</b> ${newValue}</p>`)
+
+editable.create_attribute(attrToUpdate, newValue);
+
+document.body.insertAdjacentHTML("beforeend", `<p><b>Updated Value:</b> ${editable.attrs[attrToUpdate].value}</p>`)
+
 editable.close()
 
 let readable = new h5wasm.File("myfile.h5", "r");
-console.log(`Got updated ${attrToUpdate} on hdf5 file:`, readable.attrs[attrToUpdate].value)
+document.body.insertAdjacentHTML("beforeend", `<p><b>Reloaded Value:</b> ${readable.attrs[attrToUpdate].value}</p>`)
 </script>
 </html>
