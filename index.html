@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+</body>
+<script type="module">
+
+import h5wasm from "https://cdn.jsdelivr.net/npm/h5wasm@0.4.9/dist/esm/hdf5_hl.js";
+
+// the WASM loads asychronously, and you can get the module like this:
+const { FS } = await h5wasm.ready;
+
+let new_file = new h5wasm.File("myfile.h5", "w");
+
+const attrToUpdate = "new_attr"
+const groupToUpdate = "new_group"
+
+// Create new attribute
+new_file.create_attribute(attrToUpdate, "something wicked this way comes");
+new_file.close()
+
+let editable = new h5wasm.File("myfile.h5", "a");
+
+editable.create_attribute(attrToUpdate, "something new this way comes");
+
+try {
+    editable.attrs[attrToUpdate] = "something new this way comes";
+} catch (error) {
+    console.error("Error:", error)
+}
+
+editable.close()
+
+let readable = new h5wasm.File("myfile.h5", "r");
+console.log(`Got ${attrToUpdate} on hdf5 file:`, readable.attrs[attrToUpdate].value)
+
+
+</script>
+</html>
