@@ -19,31 +19,42 @@
 </body>
 <script type="module">
 
-import h5wasm from "https://cdn.jsdelivr.net/npm/h5wasm@0.4.9/dist/esm/hdf5_hl.js";
-const { FS } = await h5wasm.ready;
-
-let new_file = new h5wasm.File("myfile.h5", "w");
-
 const attrToUpdate = "new_attr"
-
 const ogValue = "something wicked this way comes"
 const newValue =  "THIS IS SOME NEW TEXT"
 
-document.body.insertAdjacentHTML("beforeend", `<p><b>Original Value:</b> ${ogValue}</p>`)
-new_file.create_attribute(attrToUpdate, "something wicked this way comes");
-new_file.close()
+const run = async (version, name = Math.random().toString(36).substring(2, 15)) => {
 
-let editable = new h5wasm.File("myfile.h5", "a");
+    document.body.insertAdjacentHTML("beforeend", `<h2>${version}</h2>`)
 
-document.body.insertAdjacentHTML("beforeend", `<p><b>Intended Update Result:</b> ${newValue}</p>`)
+    const module = await import(`https://cdn.jsdelivr.net/npm/h5wasm@${version}/dist/esm/hdf5_hl.js`)
+    const { FS } = await module.ready;
 
-editable.create_attribute(attrToUpdate, newValue);
+    const filename = `${name}.h5`
+    let new_file = new module.File(filename, "w");
 
-document.body.insertAdjacentHTML("beforeend", `<p><b>Updated Value:</b> ${editable.attrs[attrToUpdate].value}</p>`)
+    document.body.insertAdjacentHTML("beforeend", `<p><b>Original Value:</b> ${ogValue}</p>`)
+    new_file.create_attribute(attrToUpdate, "something wicked this way comes");
+    new_file.close()
 
-editable.close()
+    let editable = new module.File(filename, "a");
 
-let readable = new h5wasm.File("myfile.h5", "r");
-document.body.insertAdjacentHTML("beforeend", `<p><b>Reloaded Value:</b> ${readable.attrs[attrToUpdate].value}</p>`)
+    document.body.insertAdjacentHTML("beforeend", `<p><b>Intended Update Result:</b> ${newValue}</p>`)
+
+    if (attrToUpdate in editable.attrs && editable.delete_attribute) editable.delete_attribute(attrToUpdate); // FIX 0.4.11
+    editable.create_attribute(attrToUpdate, newValue);
+
+    document.body.insertAdjacentHTML("beforeend", `<p><b>Updated Value:</b> ${editable.attrs[attrToUpdate].value}</p>`)
+
+    editable.close()
+
+    let readable = new module.File(filename, "r");
+    document.body.insertAdjacentHTML("beforeend", `<p><b>Reloaded Value:</b> ${readable.attrs[attrToUpdate].value}</p>`)
+}
+
+await run("0.4.9")
+await run("0.4.11")
+
+
 </script>
 </html>
